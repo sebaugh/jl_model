@@ -1,62 +1,8 @@
-# loading necessary libraries
-using Random, Distributions, Statistics, DataFrames
+module RideFunctionsModule
 
-# define structure of vehicles
-mutable struct Vehicle
-    id::Int # identifier for the vehicle
-    n_stops::Int # number of stops on that vehicle route
-    max_pass::Int # maximum capacity of the vehicle
-    avg_enter_exit::Int # average number of passengers entering and exiting the vehicle on a stop
-    avg_passengers_beginning::Int # average number of passengers at the beginning of the ride
-    passengers_inside::Int # number of the passengers inside the vehicle
-    freeriders_inside::Int # number of freeriders inside the vehicle
-    control_ability::Int # number of passengers that can be controlled without issue
-    stop_cost::Float16 # cost of driving the length of a single stop
-    p_control_per_stop::Float64 # probability of ticket control for a single stop
-    rides_left::Int # number of rides for the day for the vehicle
-end
+include("structures_module.jl")
 
-#define financial structure
-mutable struct Financial
-    ticket_price::Float16 # price of the ride
-    ticket_penalty::Float16
-    passenger_cost::Float16
-    control_cost::Float16
-    n_control_available::Int
-    p_freerider::Float32 # probability of passenger being a freerider
-    day_revenue::Float16 # revenue for the day
-end
-
-#function for creating vehicles
-function create_vehicle(;id::Int, n_stops::Int, max_pass::Int, avg_enter_exit::Int, avg_passengers_beginning::Int, stop_cost::Float64, p_control::Float64)
-    """
-    Function that creates a vehicle instance.
-
-    Arguments:
-    - id::Int # identifier for the vehicle
-    - n_stops::Int # number of stops on that vehicle route
-    - max_pass::Int # maximum capacity of the vehicle
-    - avg_enter_exit::Int # average number of passengers entering and exiting the vehicle on a stop
-    - avg_passengers_beginning::Int # average number of passengers at the beginning of the ride
-    - stop_cost::Float16 # cost of driving the length of a single stop
-    - p_control::Float64 # probability of ticket control on the whole route
-
-    Returns:
-    - Vehicle 
-    """
-    return Vehicle(
-        id=id,
-        n_stops=n_stops,
-        max_pass=max_pass,
-        avg_enter_exit=avg_enter_exit,
-        avg_passengers_beginning=avg_passengers_beginning,
-        passengers_inside=0,   # początkowa liczba pasażerów
-        freeriders_inside=0,   # początkowa liczba gapowiczów
-        control_ability = round(Int, max_pass / 3),
-        stop_cost=Float16(stop_cost),
-        p_control_per_stop= 1 - (1 - p_control)^(1 / n_stops),
-    )
-end
+using .StructuresModule
 
 # method for simulating the beginning the ride of the vehicle
 function initialize_ride!(vehicle::Vehicle, financial::Financial, pois = Distributions.Poisson(vehicle.avg_passengers_beginning))
@@ -197,4 +143,7 @@ function ride!(vehicle::Vehicle, financial::Financial)
         end
     end
     vehicle.rides_left -= 1
+end
+
+#ending the module
 end
